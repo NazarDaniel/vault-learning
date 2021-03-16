@@ -1,0 +1,90 @@
+version: '3.4'
+
+networks:
+    secrets-world:
+    secrets-internal:
+
+services:
+
+    #secrets
+    secrets-vault:
+        image: vault:1.6.3
+        container_name: secrets-vault
+        networks: 
+            - secrets-internal
+        environment: 
+            VAULT_ADDR: http://0.0.0.0:8200
+
+    #PHP / FPM / FastCgi
+    secrets-php:
+        container_name: secrets-php
+        volumes:
+            - ./api:/var/www/api
+            - ./reports-api:/var/www/reports-api
+            - ./docker/php-fpm/sockets:/run/php
+            - ./docker/php-fpm/listen.conf:/etc/php/7.4/fpm/pool.d/www.conf
+            - ./docker/api/uploads.ini:/etc/php/7.4/fpm/conf.d/90-uploads.ini
+            - ./docker/api/xdebug.ini:/etc/php/7.4/fpm/conf.d/20-xdebug.ini
+        build:
+            context: .
+            dockerfile: Dockerfile-php
+        ports:
+            - "$PHP_PORT:9000"
+        networks:
+            - secrets-internal
+        working_dir: /var/www
+        command:
+            /usr/sbin/php-fpm7.4 -F -R -O
+
+    # API web server
+    secrets-api-web:
+        image: nginx:1.19-alpine
+        container_name: secrets-api-web
+        restart: "no"
+        ports:
+            - "$API_PORT:80"
+        volumes:
+            - ./api:/var/www/api
+            - ./docker/api/nginx.conf:/etc/nginx/conf.d/default.conf   
+        networks:
+            - secrets-world
+            - secrets-internal
+        ports:
+            - "$API_PORT:80"
+
+    #Frontend (development)
+    secrets-frontend:
+        image: node:12.18-alpine
+        container_name: secrets-frontend
+        restart: "no"
+        ports:
+            - "$FRONTEND_PORT:8080"
+        volumes:
+            - ./docker/front-end/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+            - ./front-end:/var/dev 
+            - ./docker/front-end/locks:/root/locks
+        networks:
+            - secrets-world
+        working_dir: /var/dev
+        
+
+    #Database
+    secrets-db:
+        image: mysql:8.0
+        container_name: secrets-db
+        restart: "no"
+        tty: true
+        ports:
+            - "$MYSQL_PORT:3306"
+        environment:
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+            MYSQL_DATABASE: $MYSQL_DATABASE
+            MYSQL_USER: $MYSQL_USER
+            MYSQL_PASSWORD: $MYSQL_PASSWORD
+            MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+        networks:
+            - secrets-internal
+        volumes:
+            - ./docker/db-data:/var/lib/mysql
+            - ./docker/provision/secrets-db:/docker-entrypoint-initdb.d

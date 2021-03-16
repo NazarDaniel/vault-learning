@@ -1,0 +1,23 @@
+FROM debian:buster-slim
+
+RUN \
+# adicionar repo PHP 
+    apt update -y && \
+    apt install -y wget lsb-release apt-transport-https ca-certificates && \
+    wget https://packages.sury.org/php/apt.gpg \
+        -O /etc/apt/trusted.gpg.d/php.gpg && \
+    echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list ; \
+# instalar PHP e dependências
+    apt update -y  && \
+    apt install -y php7.4-fpm composer \
+        php7.4-mbstring php7.4-xml php7.4-json php7.4-mysql \
+        php7.4-curl php7.4-zip php7.4-bcmath  \
+        php-xdebug iputils-ping && \
+# wkhtmltopdf  é necessário para a API de reports
+    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb \
+        -O ~/wkhtmltox.deb && \
+    dpkg -i ~/wkhtmltox.deb ; \
+    echo "Deve ter acusado um erro de dependência aqui em cima. Vamos arrumar:"; \
+    rm -fr ~/wkhtmltox.deb && \
+    apt-get install -fy && \
+    apt-get clean
