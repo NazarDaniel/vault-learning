@@ -8,12 +8,23 @@ services:
 
     #secrets
     secrets-vault:
-        image: vault:1.6.3
+        image: vault:1.7.2
         container_name: secrets-vault
         networks: 
             - secrets-internal
         environment: 
-            VAULT_ADDR: http://0.0.0.0:8200
+            - VAULT_API_ADDR=http://0.0.0.0:8202
+            - VAULT_ADDR=http://0.0.0.0:8203
+        volumes:
+            - ./vault/config:/vault/config
+            - ./vault/policies:/vault/policies
+            - ./vault/data:/vault/data
+            - ./vault/file:/vault/file
+            - ./vault/logs:/vault/logs
+        cap_add:
+            - IPC_LOCK
+        ports:
+            - "8200:8200"
 
     #PHP / FPM / FastCgi
     secrets-php:
@@ -49,8 +60,6 @@ services:
         networks:
             - secrets-world
             - secrets-internal
-        ports:
-            - "$API_PORT:80"
 
     #Frontend (development)
     secrets-frontend:
