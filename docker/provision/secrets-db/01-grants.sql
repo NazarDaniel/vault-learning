@@ -1,2 +1,2 @@
-GRANT ALL ON `secrets%`.* TO 'secrets'@'%';
+GRANT ALL ON `vault%`.* TO 'vault'@'%';
 FLUSH PRIVILEGES;

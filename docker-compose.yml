@@ -40,7 +40,7 @@ services:
             context: .
             dockerfile: Dockerfile-php
         ports:
-            - "$PHP_PORT:9000"
+            - "9123:9000"
         networks:
             - secrets-internal
         working_dir: /var/www
@@ -53,7 +53,7 @@ services:
         container_name: secrets-api-web
         restart: "no"
         ports:
-            - "$API_PORT:80"
+            - "8321:80"
         volumes:
             - ./api:/var/www/api
             - ./docker/api/nginx.conf:/etc/nginx/conf.d/default.conf   
@@ -67,7 +67,7 @@ services:
         container_name: secrets-frontend
         restart: "no"
         ports:
-            - "$FRONTEND_PORT:8080"
+            - "8123:80"
         volumes:
             - ./docker/front-end/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
             - ./front-end:/var/dev 
@@ -84,14 +84,14 @@ services:
         restart: "no"
         tty: true
         ports:
-            - "$MYSQL_PORT:3306"
+            - "3312:3306"
         environment:
             SERVICE_TAGS: dev
             SERVICE_NAME: mysql
-            MYSQL_DATABASE: $MYSQL_DATABASE
-            MYSQL_USER: $MYSQL_USER
-            MYSQL_PASSWORD: $MYSQL_PASSWORD
-            MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+            MYSQL_DATABASE: vault
+            MYSQL_USER: vault
+            MYSQL_PASSWORD: vault
+            MYSQL_ROOT_PASSWORD: vault
         networks:
             - secrets-internal
         volumes:
