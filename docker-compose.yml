@@ -7,18 +7,20 @@ networks:
 services:
 
     #secrets
-    secrets-vault:
+    vault:
         image: vault:1.7.2
-        container_name: secrets-vault
+        container_name: vault
         networks: 
             - secrets-internal
         environment: 
             - VAULT_API_ADDR=http://0.0.0.0:8202
-            - VAULT_ADDR=http://0.0.0.0:8203
+            - VAULT_ADDR=http://0.0.0.0:8200
+            - VAULT_DEV_ROOT_TOKEN_ID=secret
+            - VAULT_TOKEN=secret
         volumes:
             - ./vault/config:/vault/config
             - ./vault/policies:/vault/policies
-            - ./vault/data:/vault/data
+            - ./_data/vault:/vault/data
             - ./vault/file:/vault/file
             - ./vault/logs:/vault/logs
         cap_add:
@@ -27,8 +29,8 @@ services:
             - "8200:8200"
 
     #PHP / FPM / FastCgi
-    secrets-php:
-        container_name: secrets-php
+    php:
+        container_name: php
         volumes:
             - ./api:/var/www/api
             - ./reports-api:/var/www/reports-api
@@ -48,9 +50,9 @@ services:
             /usr/sbin/php-fpm7.4 -F -R -O
 
     # API web server
-    secrets-api-web:
+    api-web:
         image: nginx:1.19-alpine
-        container_name: secrets-api-web
+        container_name: api-web
         restart: "no"
         ports:
             - "8321:80"
@@ -62,9 +64,9 @@ services:
             - secrets-internal
 
     #Frontend (development)
-    secrets-frontend:
+    frontend:
         image: node:12.18-alpine
-        container_name: secrets-frontend
+        container_name: frontend
         restart: "no"
         ports:
             - "8123:80"
@@ -78,9 +80,9 @@ services:
         
 
     #Database
-    secrets-db:
+    db-operator-store-x:
         image: mysql:8.0
-        container_name: secrets-db
+        container_name: db-operator-store-x
         restart: "no"
         tty: true
         ports:
@@ -95,5 +97,49 @@ services:
         networks:
             - secrets-internal
         volumes:
-            - ./docker/db-data:/var/lib/mysql
-            - ./docker/provision/secrets-db:/docker-entrypoint-initdb.d
+            - ./_data/db-operator-x:/var/lib/mysql
+            - ./docker/provision/db:/docker-entrypoint-initdb.d
+
+        
+    #Database
+    db-operator-store-y:
+        image: mysql:8.0
+        container_name: db-operator-store-y
+        restart: "no"
+        tty: true
+        ports:
+            - "3312:3306"
+        environment:
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+            MYSQL_DATABASE: vault
+            MYSQL_USER: vault
+            MYSQL_PASSWORD: vault
+            MYSQL_ROOT_PASSWORD: vault
+        networks:
+            - secrets-internal
+        volumes:
+            - ./_data/db-operator-y:/var/lib/mysql
+            - ./docker/provision/db:/docker-entrypoint-initdb.d
+
+        
+    #Database
+    db-operator-store-z:
+        image: mysql:8.0
+        container_name: db-operator-store-z
+        restart: "no"
+        tty: true
+        ports:
+            - "3312:3306"
+        environment:
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+            MYSQL_DATABASE: vault
+            MYSQL_USER: vault
+            MYSQL_PASSWORD: vault
+            MYSQL_ROOT_PASSWORD: vault
+        networks:
+            - secrets-internal
+        volumes:
+            - ./_data/db-operator-z:/var/lib/mysql
+            - ./docker/provision/db:/docker-entrypoint-initdb.d
