@@ -33,7 +33,6 @@ services:
         container_name: php
         volumes:
             - ./api:/var/www/api
-            - ./reports-api:/var/www/reports-api
             - ./docker/php-fpm/sockets:/run/php
             - ./docker/php-fpm/listen.conf:/etc/php/7.4/fpm/pool.d/www.conf
             - ./docker/api/uploads.ini:/etc/php/7.4/fpm/conf.d/90-uploads.ini
@@ -80,17 +79,17 @@ services:
         
 
     #Database
-    db-operator-store-x:
+    db-operator-x:
         image: mysql:8.0
-        container_name: db-operator-store-x
+        container_name: db-operator-x
         restart: "no"
         tty: true
         ports:
-            - "3312:3306"
+            - "33061:3306"
         environment:
             SERVICE_TAGS: dev
             SERVICE_NAME: mysql
-            MYSQL_DATABASE: vault
+            MYSQL_DATABASE: operator-x
             MYSQL_USER: vault
             MYSQL_PASSWORD: vault
             MYSQL_ROOT_PASSWORD: vault
@@ -102,17 +101,17 @@ services:
 
         
     #Database
-    db-operator-store-y:
+    db-operator-y:
         image: mysql:8.0
-        container_name: db-operator-store-y
+        container_name: db-operator-y
         restart: "no"
         tty: true
         ports:
-            - "3312:3306"
+            - "33062:3306"
         environment:
             SERVICE_TAGS: dev
             SERVICE_NAME: mysql
-            MYSQL_DATABASE: vault
+            MYSQL_DATABASE: operator-y
             MYSQL_USER: vault
             MYSQL_PASSWORD: vault
             MYSQL_ROOT_PASSWORD: vault
@@ -124,17 +123,17 @@ services:
 
         
     #Database
-    db-operator-store-z:
+    db-operator-z:
         image: mysql:8.0
-        container_name: db-operator-store-z
+        container_name: db-operator-z
         restart: "no"
         tty: true
         ports:
-            - "3312:3306"
+            - "33063:3306"
         environment:
             SERVICE_TAGS: dev
             SERVICE_NAME: mysql
-            MYSQL_DATABASE: vault
+            MYSQL_DATABASE: operator-z
             MYSQL_USER: vault
             MYSQL_PASSWORD: vault
             MYSQL_ROOT_PASSWORD: vault
